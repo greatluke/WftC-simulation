@@ -12,13 +12,16 @@ and there is no backend.
 ## What it shows
 
 - **Top 5 / 10 / 20** decks buildable from the cards you ticked, ranked by
-  **average power** — the mean over all 120 card orders. Card order is randomised
-  every session, so the average is what you actually get over time, and it is the
-  only sensible thing to rank by: a deck's high roll is luck, not something you can
-  aim at. Decks containing Destiny assume you pick its best re-trigger target, since
-  that target is your choice rather than a roll.
+  **average power** — the mean over all 120 card orders, and over every Destiny
+  re-trigger target. Card order is randomised every session, so the average is what
+  you actually get over time, and it is the only sensible thing to rank by: a deck's
+  high roll is luck, not something you can aim at. This is the same average the game
+  shows on its own training screen, so you can check any deck here against your own.
 - **The range** next to each deck is the spread across those 120 orders — how bad a
   bad session gets, and how good a lucky one can be.
+- **Where a deck has Destiny**, the tool names the re-trigger target that pays best.
+  The score does *not* assume you pick it, so aiming well puts you above the number
+  shown.
 - **Best card to chase next** — of the cards you don't own, which one would raise
   your best deck the most, and by how much.
 
