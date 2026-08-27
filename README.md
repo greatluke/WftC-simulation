@@ -11,15 +11,14 @@ and there is no backend.
 
 ## What it shows
 
-- **Top 5 / 10 / 20** decks buildable from the cards you ticked.
-- **Average power** — the mean over all 120 card orders. Card order is randomised
-  each session, so this is what you actually experience over time, and the number
-  worth optimising. Decks containing Destiny assume you pick its best re-trigger
-  target, since that target is your choice rather than a roll.
-- **Max roll** — the highest result seen in simulation. Mostly luck; good for
-  chasing a one-off record, bad for picking a deck.
-- **Worst case** — the lowest result, for when you need to clear a threshold every
-  single time.
+- **Top 5 / 10 / 20** decks buildable from the cards you ticked, ranked by
+  **average power** — the mean over all 120 card orders. Card order is randomised
+  every session, so the average is what you actually get over time, and it is the
+  only sensible thing to rank by: a deck's high roll is luck, not something you can
+  aim at. Decks containing Destiny assume you pick its best re-trigger target, since
+  that target is your choice rather than a roll.
+- **The range** next to each deck is the spread across those 120 orders — how bad a
+  bad session gets, and how good a lucky one can be.
 - **Best card to chase next** — of the cards you don't own, which one would raise
   your best deck the most, and by how much.
 
