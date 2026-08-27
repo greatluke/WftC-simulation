@@ -47,7 +47,7 @@ Clone and open `index.html`. There is no build step and no server needed —
 
 ```
 index.html   the entire app
-data.js      generated: 42,504 scored decks + card metadata
+data.js      generated: 42,504 scored decks, card metadata and inlined card art
 ```
 
 Unaffiliated with the game or its developers.
