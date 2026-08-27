@@ -182,7 +182,7 @@ footer a{color:var(--ink-dim)}
 <footer id="footer"></footer>
 </div>
 
-<script src="data.js?v=2e568c6e87"></script>
+<script src="data.js?v=9a2c4cd753"></script>
 <script>
 (function(){
   var D = window.WOTC;
@@ -323,7 +323,7 @@ footer a{color:var(--ink-dim)}
 
     var meta = document.createElement('div'); meta.className = 'meta';
     var bits = [];
-    if(D.tgt[i] >= 0) bits.push('<span class="tg">Destiny &rarr; ' + CARDS[D.tgt[i]].n + '</span>');
+    if(D.tgt[i] >= 0) bits.push('<span class="tg">aim Destiny at ' + CARDS[D.tgt[i]].n + '</span>');
     bits.push('range ' + nf.format(D.lo[i]) + '&ndash;' + nf.format(D.hi[i]));
     bits.push('overall #' + nf.format(i + 1));
     meta.innerHTML = bits.join(' &middot; ');
@@ -402,10 +402,12 @@ footer a{color:var(--ink-dim)}
   document.getElementById('footer').innerHTML =
     'Power = total Strength &times; total Technique after every plan effect resolves. ' +
     'Card order is randomised every session, so decks are ranked by <b>average power</b>: the mean ' +
-    'over all 120 orders, which is what you actually get over time. The range beside each deck is the ' +
-    'spread across those orders &mdash; the high end is a lucky roll, not something you can aim at, ' +
-    'which is why nothing is ranked by it. Where a deck contains Destiny, the tool assumes you pick ' +
-    'its best re-trigger target.<br>' +
+    'over all 120 orders, and over every Destiny re-trigger target. That is the same average the game ' +
+    'shows on its own training screen, so you can check any deck here against your own. The range ' +
+    'beside each deck is the spread across those runs &mdash; the high end is a lucky roll, not ' +
+    'something you can aim at, which is why nothing is ranked by it. Where a deck has Destiny, the ' +
+    'target named is the one that pays best; the score does not assume you pick it, so aiming well ' +
+    'puts you above the number shown.<br>' +
     'Numbers come from a reverse-engineered simulator (' + nf.format(D.nDecks) + ' decks, ' +
     nf.format(D.samples) + ' samples per random-order deck)' +
     (a ? '. Against ' + a.n + ' combos measured in the real game it reproduces ' +
