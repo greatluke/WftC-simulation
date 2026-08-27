@@ -166,14 +166,6 @@ footer a{color:var(--ink-dim)}
             <button data-v="20">Top 20</button>
           </div>
         </div>
-        <div class="field">
-          <label>Rank by</label>
-          <div class="seg" id="metric">
-            <button data-v="score">Average</button>
-            <button data-v="hi">Max roll</button>
-            <button data-v="lo">Worst case</button>
-          </div>
-        </div>
       </div>
       <p class="count" id="count" style="margin-top:14px"></p>
       <ol class="decks" id="results"></ol>
@@ -198,7 +190,6 @@ footer a{color:var(--ink-dim)}
 
   var owned = 0;          // bitmask of cards the player has
   var topN = 10;
-  var metric = 'score';
 
   /* ---------- restore selection: URL hash wins, then localStorage ---------- */
   function readInitial(){
@@ -269,8 +260,7 @@ footer a{color:var(--ink-dim)}
       });
     };
   }
-  var paintTopN  = seg('topN','10', function(v){ topN = +v; });
-  var paintMetric= seg('metric','score', function(v){ metric = v; });
+  var paintTopN = seg('topN','10', function(v){ topN = +v; });
 
   document.getElementById('selAll').onclick  = function(){ owned = (1<<N)-1; render(); };
   document.getElementById('selNone').onclick = function(){ owned = 0; render(); };
@@ -281,19 +271,14 @@ footer a{color:var(--ink-dim)}
   };
 
   /* ---------- search ---------- */
-  // Decks are pre-sorted by average score, so the "Average" ranking can stop
-  // as soon as it has enough hits. The other two metrics need a full pass.
-  function search(ownedMask, want, key){
-    var mask = D.mask, out = [], i;
-    if(key === 'score'){
-      for(i=0;i<mask.length && out.length<want;i++)
-        if((mask[i] & ~ownedMask) === 0) out.push(i);
-      return out;
-    }
-    var arr = D[key], hits = [];
-    for(i=0;i<mask.length;i++) if((mask[i] & ~ownedMask) === 0) hits.push(i);
-    hits.sort(function(a,b){ return arr[b] - arr[a] || D.score[b] - D.score[a]; });
-    return hits.slice(0, want);
+  // Decks are pre-sorted by average power -- the only ranking on offer, since a
+  // deck's max is a lucky roll rather than something a player can aim at -- so
+  // the scan can stop as soon as it has enough hits.
+  function search(ownedMask, want){
+    var mask = D.mask, out = [];
+    for(var i=0;i<mask.length && out.length<want;i++)
+      if((mask[i] & ~ownedMask) === 0) out.push(i);
+    return out;
   }
 
   function countBuildable(ownedMask){
@@ -338,8 +323,7 @@ footer a{color:var(--ink-dim)}
     body.appendChild(meta);
 
     var score = document.createElement('div'); score.className = 'score';
-    var key = metric, label = {score:'avg power', hi:'max power', lo:'min power'}[key];
-    score.innerHTML = '<b>' + nf.format(D[key][i]) + '</b><span>' + label + '</span>';
+    score.innerHTML = '<b>' + nf.format(D.score[i]) + '</b><span>avg power</span>';
 
     li.appendChild(rank); li.appendChild(body); li.appendChild(score);
     return li;
@@ -377,7 +361,7 @@ footer a{color:var(--ink-dim)}
   function render(){
     persist();
     for(var i=0;i<N;i++) buttons[i].setAttribute('aria-pressed', String(!!(owned & (1<<i))));
-    paintTopN(topN); paintMetric(metric);
+    paintTopN(topN);
 
     var have = popcount(owned);
     document.getElementById('ownedLine').textContent =
@@ -401,7 +385,7 @@ footer a{color:var(--ink-dim)}
     count.innerHTML = '<b>' + nf.format(buildable) + '</b> buildable deck' +
       (buildable === 1 ? '' : 's') + ' out of ' + nf.format(D.nDecks) + '.';
 
-    search(owned, topN, metric).forEach(function(idx, k){
+    search(owned, topN).forEach(function(idx, k){
       list.appendChild(deckRow(idx, k + 1));
     });
     renderUpgrades();
@@ -410,9 +394,11 @@ footer a{color:var(--ink-dim)}
   var a = D.accuracy;
   document.getElementById('footer').innerHTML =
     'Power = total Strength &times; total Technique after every plan effect resolves. ' +
-    'Card order is random each session, so <b>average power</b> is the mean over all 120 orders &mdash; ' +
-    'that is the number to optimise for. <b>Max power</b> is the best roll ever seen in simulation and is ' +
-    'mostly luck. Where a deck contains Destiny, the tool assumes you pick its best re-trigger target.<br>' +
+    'Card order is randomised every session, so decks are ranked by <b>average power</b>: the mean ' +
+    'over all 120 orders, which is what you actually get over time. The range beside each deck is the ' +
+    'spread across those orders &mdash; the high end is a lucky roll, not something you can aim at, ' +
+    'which is why nothing is ranked by it. Where a deck contains Destiny, the tool assumes you pick ' +
+    'its best re-trigger target.<br>' +
     'Numbers come from a reverse-engineered simulator (' + nf.format(D.nDecks) + ' decks, ' +
     nf.format(D.samples) + ' samples per random-order deck)' +
     (a ? '. Against ' + a.n + ' combos measured in the real game it reproduces ' +
