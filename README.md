@@ -3,7 +3,7 @@
 Tick the training plan cards you own; get the strongest five-card decks you can
 actually build.
 
-**Live:** https://greatluke.github.io/wotc-deck-finder/
+**Live:** https://greatluke.github.io/WftC-simulation/
 
 All 42,504 possible decks (`C(24,5)`) are scored ahead of time, so the page filters
 them to your collection instantly and entirely in your browser. Nothing is uploaded
