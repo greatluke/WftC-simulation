@@ -4,23 +4,23 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="dark light">
-<title>War of the Crowns — Training Plan Deck Finder</title>
+<title>War for the Crown — Training Plan Deck Finder</title>
 <meta name="description" content="Tick the training plan cards you own and get the strongest 5-card decks you can actually build.">
 <style>
 :root{
-  --bg:#12131a; --panel:#191b25; --panel-2:#1f2230; --line:#2c3040;
-  --ink:#e8eaf2; --ink-dim:#9aa0b5; --ink-faint:#6b7189;
-  --accent:#7aa2ff; --accent-ink:#0d1016;
+  --bg:#0c0d13; --panel:#171923; --panel-2:#20232f; --line:#303444;
+  --ink:#f2f1ed; --ink-dim:#aaaebd; --ink-faint:#74798d;
+  --accent:#e5b757; --accent-2:#8aa9ff; --accent-ink:#161108;
   --gold:#e0ac4a; --gold-bg:#3a2c11; --gold-line:#6b5218;
   --purple:#b183e8; --purple-bg:#2f2340; --purple-line:#4d3a68;
   --blue:#5fa8e8; --blue-bg:#132c40; --blue-line:#264a68;
-  --radius:10px;
+  --radius:16px; --shadow:0 20px 55px rgba(0,0,0,.26);
 }
 @media (prefers-color-scheme: light){
   :root{
     --bg:#f4f5f9; --panel:#ffffff; --panel-2:#f7f8fc; --line:#dfe2ec;
     --ink:#1b1d26; --ink-dim:#5b6178; --ink-faint:#868da4;
-    --accent:#2f5fd0; --accent-ink:#ffffff;
+    --accent:#966614; --accent-2:#2f5fd0; --accent-ink:#ffffff;
     --gold:#8a6410; --gold-bg:#fdf3dc; --gold-line:#e8cf95;
     --purple:#6a3fb0; --purple-bg:#f3ecfd; --purple-line:#d9c6f2;
     --blue:#1c5f96; --blue-bg:#e6f1fb; --blue-line:#bcd9ef;
@@ -29,42 +29,61 @@
 *{box-sizing:border-box}
 html,body{margin:0;padding:0}
 body{
-  background:var(--bg); color:var(--ink);
+  min-height:100vh;background:
+    radial-gradient(circle at 12% -8%,rgba(224,172,74,.13),transparent 32rem),
+    radial-gradient(circle at 90% 8%,rgba(122,162,255,.11),transparent 30rem),var(--bg);color:var(--ink);
   font:15px/1.5 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
   -webkit-font-smoothing:antialiased;
 }
-.wrap{max-width:1180px;margin:0 auto;padding:28px 20px 64px}
-header h1{margin:0 0 6px;font-size:24px;letter-spacing:-.01em}
-header p{margin:0;color:var(--ink-dim);max-width:62ch}
+.wrap{max-width:1220px;margin:0 auto;padding:34px 22px 72px}
+header{position:relative;display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:18px;align-items:center;padding:10px 2px 22px}
+.crest{display:grid;place-items:center;width:104px;height:104px;filter:drop-shadow(0 14px 16px rgba(0,0,0,.34))}
+.crest img{display:block;width:100%;height:100%;object-fit:contain}
+.eyebrow{margin:0 0 3px;color:var(--gold);font-size:11px;font-weight:750;letter-spacing:.16em;text-transform:uppercase}
+header h1{margin:0 0 5px;font-family:Georgia,"Times New Roman",serif;font-size:clamp(26px,3.2vw,40px);line-height:1.08;letter-spacing:-.025em}
+header p{margin:0;color:var(--ink-dim);max-width:68ch}
 header a{color:var(--accent)}
+.hero-stat{text-align:right;padding-left:22px;border-left:1px solid var(--line)}
+.hero-stat b{display:block;font-size:20px;color:var(--ink);font-variant-numeric:tabular-nums}
+.hero-stat span{display:block;color:var(--ink-faint);font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase}
+@media(max-width:700px){header{grid-template-columns:auto 1fr;gap:13px}.hero-stat{display:none}.crest{width:78px;height:78px}}
 
-.layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:22px;margin-top:26px;align-items:start}
+.layout{display:grid;grid-template-columns:minmax(0,1.08fr) minmax(390px,.92fr);gap:24px;margin-top:14px;align-items:start}
 @media (max-width:900px){.layout{grid-template-columns:1fr}}
 
-.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:16px}
+.panel{position:relative;background:linear-gradient(155deg,rgba(255,255,255,.018),transparent 45%),var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);overflow:hidden}
+.panel::before{content:"";position:absolute;inset:0 0 auto;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.16),transparent);pointer-events:none}
 .panel + .panel{margin-top:18px}
-.panel h2{margin:0 0 4px;font-size:14px;text-transform:uppercase;letter-spacing:.07em;color:var(--ink-dim)}
+.panel h2{margin:0 0 4px;font-family:Georgia,"Times New Roman",serif;font-size:20px;letter-spacing:-.01em;color:var(--ink)}
 .sub{margin:0 0 14px;color:var(--ink-faint);font-size:13px}
+.result-column{position:sticky;top:18px}
+@media(max-width:900px){.result-column{position:static}}
 
 /* ---- picker ---- */
-.tier{margin-bottom:16px}
+.tier{margin-bottom:20px}
 .tier:last-child{margin-bottom:0}
 .tier-head{display:flex;align-items:center;gap:10px;margin-bottom:8px}
 .tier-name{font-weight:650;font-size:13px;letter-spacing:.04em;text-transform:uppercase}
 .tier-name.Gold{color:var(--gold)} .tier-name.Purple{color:var(--purple)} .tier-name.Blue{color:var(--blue)}
 .tier-head button{margin-left:auto}
 
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(162px,1fr));gap:8px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px}
 .card{
   position:relative;text-align:left;cursor:pointer;display:flex;align-items:center;gap:9px;
   background:var(--panel-2);border:1px solid var(--line);border-radius:8px;
-  padding:7px 9px;color:var(--ink);font:inherit;transition:background .12s,border-color .12s;
+  min-height:72px;padding:9px 11px;color:var(--ink);font:inherit;transition:transform .16s,background .16s,border-color .16s,box-shadow .16s;
 }
-.card:hover{border-color:var(--ink-faint)}
+.card:hover{border-color:var(--ink-faint);transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,.18)}
+.card:focus-visible,button:focus-visible{outline:2px solid var(--accent-2);outline-offset:2px}
 .card img{
-  width:38px;height:36px;flex:0 0 auto;border-radius:4px;display:block;
-  border:1px solid rgba(0,0,0,.25);background:#2a2c38;
+  width:54px;height:54px;flex:0 0 auto;border-radius:10px;display:block;object-fit:cover;
+  border:1px solid rgba(255,255,255,.14);background:#2a2c38;
+  box-shadow:0 5px 13px rgba(0,0,0,.32),inset 0 0 0 1px rgba(255,255,255,.06);
 }
+.card.Gold img{border-color:rgba(224,172,74,.42)}
+.card.Purple img{border-color:rgba(177,131,232,.42)}
+.card.Blue img{border-color:rgba(95,168,232,.42)}
+.card[aria-pressed="true"] img{box-shadow:0 7px 17px rgba(0,0,0,.38),0 0 0 1px currentColor}
 .card .txt{min-width:0}
 .card .nm{display:block;font-weight:600;font-size:13.5px;padding-right:16px}
 .card .st{display:block;font-size:11.5px;color:var(--ink-faint);font-variant-numeric:tabular-nums;margin-top:1px}
@@ -84,6 +103,8 @@ button.mini{
   border-radius:6px;padding:3px 8px;font:inherit;font-size:12px;cursor:pointer;
 }
 button.mini:hover{color:var(--ink);border-color:var(--ink-faint)}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:17px;padding-top:15px;border-top:1px solid var(--line)}
+.actions .primary{color:var(--accent);border-color:color-mix(in srgb,var(--accent) 45%,var(--line))}
 
 /* ---- controls ---- */
 .controls{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end}
@@ -103,14 +124,19 @@ button.mini:hover{color:var(--ink);border-color:var(--ink-faint)}
 ol.decks{list-style:none;margin:0;padding:0}
 ol.decks li{
   display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:12px;align-items:center;
-  padding:10px 4px;border-top:1px solid var(--line);
+  position:relative;padding:13px 6px;border-top:1px solid var(--line);transition:background .15s;
 }
 ol.decks li:first-child{border-top:0}
+ol.decks li:not(.empty):hover{background:rgba(255,255,255,.025)}
+ol.decks li:first-child:not(.empty){margin:0 -8px 5px;padding:16px 14px;border:1px solid var(--gold-line);border-radius:12px;background:linear-gradient(120deg,var(--gold-bg),transparent 72%)}
+ol.decks li:first-child .rank{color:var(--gold);font-weight:800}
+ol.decks li:first-child .score b{color:var(--gold);font-size:20px}
 ol.decks li.empty{display:block;border-top:0}
 .rank{font-variant-numeric:tabular-nums;color:var(--ink-faint);font-size:13px;text-align:right}
-.chips{display:flex;flex-wrap:wrap;gap:5px}
+.deck-body{min-width:0}
+.chips{display:flex;flex-wrap:nowrap;gap:4px;max-width:100%;overflow-x:auto;padding:2px 1px 5px;scrollbar-width:thin}
 .chip{
-  font-size:12px;padding:2px 8px;border-radius:999px;border:1px solid transparent;white-space:nowrap;
+  flex:0 0 auto;font-size:11.5px;padding:2px 7px;border-radius:999px;border:1px solid transparent;white-space:nowrap;
 }
 .chip.Gold{background:var(--gold-bg);border-color:var(--gold-line);color:var(--gold)}
 .chip.Purple{background:var(--purple-bg);border-color:var(--purple-line);color:var(--purple)}
@@ -118,7 +144,7 @@ ol.decks li.empty{display:block;border-top:0}
 .meta{margin-top:4px;font-size:12px;color:var(--ink-faint);font-variant-numeric:tabular-nums}
 .meta .tg{color:var(--ink-dim)}
 .score{text-align:right;font-variant-numeric:tabular-nums}
-.score b{display:block;font-size:17px;font-weight:650;letter-spacing:-.01em}
+.score b{display:block;font-size:18px;font-weight:750;letter-spacing:-.02em}
 .score span{font-size:11px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.05em}
 
 .empty{color:var(--ink-dim);padding:8px 0}
@@ -127,15 +153,27 @@ ol.decks li.empty{display:block;border-top:0}
 .upg .delta{margin-left:auto;color:var(--accent);font-variant-numeric:tabular-nums;font-weight:600}
 footer{margin-top:34px;color:var(--ink-faint);font-size:12.5px;line-height:1.7}
 footer a{color:var(--ink-dim)}
+@media(max-width:560px){
+  .wrap{padding:22px 14px 48px}.panel{padding:16px}.grid{grid-template-columns:1fr 1fr;gap:7px}
+  .card{min-height:64px;padding:7px;gap:8px}.card img{width:46px;height:46px;border-radius:8px}.card .nm{font-size:12.5px}.card .st{font-size:10.5px}
+  ol.decks li{grid-template-columns:25px minmax(0,1fr);gap:8px}.score{grid-column:2;text-align:left;display:flex;align-items:baseline;gap:7px}.score b{font-size:17px}
+}
+@media(prefers-reduced-motion:reduce){.card,ol.decks li{transition:none}.card:hover{transform:none}}
 </style>
 </head>
 <body>
 <div class="wrap">
 
 <header>
-  <h1>War of the Crowns — Training Plan Deck Finder</h1>
-  <p>Tick the plan cards you actually own. The tool searches all 42,504 possible five-card decks
-     and shows the strongest ones you can build right now.</p>
+  <div class="crest" aria-hidden="true">
+    <img src="crown-medal-logo.png" alt="">
+  </div>
+  <div>
+    <div class="eyebrow">Training Plan Optimizer</div>
+    <h1>War for the Crown</h1>
+    <p>Choose the plan cards you own and uncover the strongest five-card decks available to you.</p>
+  </div>
+  <div class="hero-stat"><b>42,504</b><span>Decks analyzed</span></div>
 </header>
 
 <div class="layout">
@@ -145,10 +183,10 @@ footer a{color:var(--ink-dim)}
       <h2>Your cards</h2>
       <p class="sub" id="ownedLine">None selected.</p>
       <div id="picker"></div>
-      <div style="display:flex;gap:8px;margin-top:14px">
+      <div class="actions">
         <button class="mini" id="selAll">Select all 24</button>
         <button class="mini" id="selNone">Clear</button>
-        <button class="mini" id="copyLink">Copy shareable link</button>
+        <button class="mini primary" id="copyLink">Copy shareable link</button>
       </div>
     </section>
 
@@ -159,7 +197,7 @@ footer a{color:var(--ink-dim)}
     </section>
   </div>
 
-  <div>
+  <div class="result-column">
     <section class="panel">
       <h2>Best decks</h2>
       <div class="controls">
@@ -168,7 +206,7 @@ footer a{color:var(--ink-dim)}
           <div class="seg" id="topN">
             <button data-v="5">Top 5</button>
             <button data-v="10">Top 10</button>
-            <button data-v="20">Top 20</button>
+            <button data-v="15">Top 15</button>
           </div>
         </div>
       </div>
@@ -309,7 +347,7 @@ footer a{color:var(--ink-dim)}
     var rank = document.createElement('div');
     rank.className = 'rank'; rank.textContent = '#' + place;
 
-    var body = document.createElement('div');
+    var body = document.createElement('div'); body.className = 'deck-body';
     var chips = document.createElement('div'); chips.className = 'chips';
     var m = D.mask[i];
     for(var k=0;k<N;k++) if(m & (1<<k)){
