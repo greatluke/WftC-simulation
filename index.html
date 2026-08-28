@@ -219,7 +219,7 @@ footer a{color:var(--ink-dim)}
 <footer id="footer"></footer>
 </div>
 
-<script src="data.js?v=9a2c4cd753"></script>
+<script src="data.js?v=04527c279f"></script>
 <script>
 (function(){
   var D = window.WOTC;
@@ -437,21 +437,16 @@ footer a{color:var(--ink-dim)}
   var a = D.accuracy;
   document.getElementById('footer').innerHTML =
     'Power = total Strength &times; total Technique after every plan effect resolves. ' +
-    'Card order is randomised every session, so decks are ranked by <b>average power</b>: the mean ' +
-    'over all 120 orders, and over every Destiny re-trigger target. That is the same average the game ' +
-    'shows on its own training screen, so you can check any deck here against your own. The range ' +
-    'beside each deck is the spread across those runs &mdash; the high end is a lucky roll, not ' +
-    'something you can aim at, which is why nothing is ranked by it.<br>' +
-    'Numbers come from a reverse-engineered simulator (' + nf.format(D.nDecks) + ' decks, ' +
-    nf.format(D.samples) + ' samples per random-order deck)' +
-    (a ? '. Against ' + a.n + ' combos measured in the real game it reproduces ' +
-         a.minExact + '/' + a.n + ' minimums and ' + a.maxExact + '/' + a.n +
-         ' maximums exactly' +
-         (a.hardFail ? ', but ' + a.hardFail + ' in-game result' + (a.hardFail===1?' is':'s are') +
-                       ' out of its reach'
-                     : ', and every in-game result it does not match exactly is still reachable ' +
-                       '(the game had simply not rolled that high yet)') +
-         '. Treat it as a strong guide, not gospel.' : '.');
+    'Card order is randomised every session, so decks are ranked by <b>average power</b> &mdash; the ' +
+    'same average the game shows on its own training screen, so you can check any deck here against ' +
+    'your own. The range beside each deck is the full spread the game can display; the high end is a ' +
+    'lucky roll, not something you can aim at, which is why nothing is ranked by it.<br>' +
+    'Numbers are computed with the game’s own Training Plan logic, extracted from the client ' +
+    '(' + nf.format(D.nDecks) + ' decks)' +
+    (a ? '. On all ' + a.n + ' decks measured in-game it reproduces the displayed min, max and ' +
+         'average exactly.' : '.') +
+    ' For decks with Airdrop or Destiny the exact number shifts a little with how you order the ' +
+    'five slots; the figure shown is the average over all orderings.';
 
   owned = readInitial();
   render();
