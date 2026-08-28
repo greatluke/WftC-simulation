@@ -142,7 +142,6 @@ ol.decks li.empty{display:block;border-top:0}
 .chip.Purple{background:var(--purple-bg);border-color:var(--purple-line);color:var(--purple)}
 .chip.Blue{background:var(--blue-bg);border-color:var(--blue-line);color:var(--blue)}
 .meta{margin-top:4px;font-size:12px;color:var(--ink-faint);font-variant-numeric:tabular-nums}
-.meta .tg{color:var(--ink-dim)}
 .score{text-align:right;font-variant-numeric:tabular-nums}
 .score b{display:block;font-size:18px;font-weight:750;letter-spacing:-.02em}
 .score span{font-size:11px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.05em}
@@ -361,7 +360,6 @@ footer a{color:var(--ink-dim)}
 
     var meta = document.createElement('div'); meta.className = 'meta';
     var bits = [];
-    if(D.tgt[i] >= 0) bits.push('<span class="tg">aim Destiny at ' + CARDS[D.tgt[i]].n + '</span>');
     bits.push('range ' + nf.format(D.lo[i]) + '&ndash;' + nf.format(D.hi[i]));
     bits.push('overall #' + nf.format(i + 1));
     meta.innerHTML = bits.join(' &middot; ');
@@ -443,9 +441,7 @@ footer a{color:var(--ink-dim)}
     'over all 120 orders, and over every Destiny re-trigger target. That is the same average the game ' +
     'shows on its own training screen, so you can check any deck here against your own. The range ' +
     'beside each deck is the spread across those runs &mdash; the high end is a lucky roll, not ' +
-    'something you can aim at, which is why nothing is ranked by it. Where a deck has Destiny, the ' +
-    'target named is the one that pays best; the score does not assume you pick it, so aiming well ' +
-    'puts you above the number shown.<br>' +
+    'something you can aim at, which is why nothing is ranked by it.<br>' +
     'Numbers come from a reverse-engineered simulator (' + nf.format(D.nDecks) + ' decks, ' +
     nf.format(D.samples) + ' samples per random-order deck)' +
     (a ? '. Against ' + a.n + ' combos measured in the real game it reproduces ' +
