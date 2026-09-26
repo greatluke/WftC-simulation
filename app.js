@@ -115,20 +115,53 @@
   }
 
   /* ---------- state ---------- */
+  // Your plans are kept in the browser (localStorage) and mirrored in the URL
+  // (#...), so a bookmark or shared link reproduces them.  A shared link is shown
+  // but does NOT overwrite the plans saved on this device until you change
+  // something; "Restore mine" brings them back.
+  var linkString = null;                      // levels from an opened link, if any
+  function savedLevels() {
+    try { var s = localStorage.getItem('wotc.levels'); if (s && /^[0-6]{24}$/.test(s)) return s; } catch (e) {}
+    return null;
+  }
   function readInitial() {
     var h = location.hash.replace(/^#/, '');
-    if (/^[0-6]{24}$/.test(h)) return h.split('').map(Number);
+    if (/^[0-6]{24}$/.test(h)) { linkString = h; return h.split('').map(Number); }
     if (/^[0-9a-z]+$/.test(h)) {                      // old links: owned bitmask -> Lv 6
       var v = parseInt(h, 36);
-      if (!isNaN(v) && v >= 0 && v < (1 << N)) return levels.map(function (_, i) { return v & (1 << i) ? 6 : 0; });
+      if (!isNaN(v) && v >= 0 && v < (1 << N)) {
+        var old = levels.map(function (_, i) { return v & (1 << i) ? 6 : 0; });
+        linkString = old.join(''); return old;
+      }
     }
-    try { var s = localStorage.getItem('wotc.levels'); if (s && /^[0-6]{24}$/.test(s)) return s.split('').map(Number); } catch (e) {}
-    return levels.slice();
+    var sv = savedLevels();
+    return sv ? sv.split('').map(Number) : levels.slice();
+  }
+  function loadPrefs() {
+    try {
+      var p = JSON.parse(localStorage.getItem('wotc.prefs') || '{}');
+      if ([10, 20, 50].indexOf(p.topN) >= 0) topN = p.topN;
+      if (p.rankBy === 'avg' || p.rankBy === 'max') rankBy = p.rankBy;
+    } catch (e) {}
   }
   function persist() {
     var s = levels.join('');
-    try { localStorage.setItem('wotc.levels', s); } catch (e) {}
+    // Keep this device's saved plans while a shared link is merely being viewed.
+    if (linkString === null || s !== linkString) {
+      try { localStorage.setItem('wotc.levels', s); } catch (e) {}
+      linkString = null;
+    }
+    try { localStorage.setItem('wotc.prefs', JSON.stringify({ topN: topN, rankBy: rankBy })); } catch (e) {}
     history.replaceState(null, '', /[1-6]/.test(s) ? '#' + s : location.pathname);
+    paintLinkNote();
+  }
+  function paintLinkNote() {
+    var box = document.getElementById('linkNote'); if (!box) return;
+    var mine = savedLevels();
+    if (linkString !== null && mine && mine !== linkString) {
+      box.hidden = false;
+      box.querySelector('button').onclick = function () { levels = mine.split('').map(Number); linkString = null; render(); };
+    } else box.hidden = true;
   }
 
   /* ---------- picker ---------- */
@@ -316,6 +349,7 @@
     '<b>Average</b> is the same average the game shows on its training screen; <b>top power</b> is the best roll the game can display. ' +
     'For decks with Airdrop or Destiny the exact figure shifts a little with how you order the five slots; the figures shown are over all 120 orderings.';
 
+  loadPrefs();
   levels = readInitial();
   render();
 })();
