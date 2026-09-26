@@ -256,7 +256,6 @@
       var c = CARDS[i], el = cardEls[i], l = levels[i];
       if (l) have++;
       el.classList.toggle('on', !!l);
-      el.style.opacity = l ? '' : '.62';
       var row = c.lv[(l || 6) - 1];
       el.querySelector('.st').textContent = row[0] + ' STR / ' + row[1] + ' TECH' + (l ? '' : ' (Lv 6)');
       [].forEach.call(el.querySelector('.lvbar').children, function (b, k) { b.setAttribute('aria-pressed', String(k === l)); });
