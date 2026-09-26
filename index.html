@@ -113,6 +113,14 @@ button.mini:hover{color:var(--ink);border-color:var(--ink-faint)}
 .card{cursor:default}
 .card .txt{flex:1}
 .chip i{font-style:normal;opacity:.75;margin-left:3px}
+.icons{display:flex;gap:6px;flex-wrap:wrap;padding:2px 0 4px}
+.ico{position:relative;display:flex;flex-direction:column;align-items:center;width:58px}
+.ico img{width:52px;height:52px;border-radius:9px;object-fit:cover;display:block;border:1.5px solid var(--line);background:#2a2c38}
+.ico.Gold img{border-color:var(--gold)} .ico.Purple img{border-color:var(--purple)} .ico.Blue img{border-color:var(--blue)}
+.ico b{position:absolute;top:-5px;left:50%;transform:translateX(-50%);font-size:10.5px;line-height:1;padding:2px 5px;border-radius:999px;color:#fff;background:#222a;border:1px solid currentColor;white-space:nowrap;font-variant-numeric:tabular-nums}
+.ico.Gold b{background:var(--gold-bg);color:var(--gold)} .ico.Purple b{background:var(--purple-bg);color:var(--purple)} .ico.Blue b{background:var(--blue-bg);color:var(--blue)}
+.ico em{font-style:normal;font-size:10px;color:var(--ink-faint);margin-top:2px;max-width:58px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media(max-width:560px){.ico{width:48px}.ico img{width:44px;height:44px}}
 /* ---- controls ---- */
 .controls{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end}
 .field{display:flex;flex-direction:column;gap:5px}
@@ -234,7 +242,7 @@ footer a{color:var(--ink-dim)}
 </div>
 
 <script src="data.js?v=54c3f9bc1e"></script>
-<script src="app.js?v=d551768d88"></script>
+<script src="app.js?v=a9f678dbf5"></script>
 
 <!-- Traffic counts. No cookies, no identifiers, no consent banner. count.js reports
      location.pathname + location.search only, so the card selection this page keeps

@@ -183,10 +183,14 @@
     var li = document.createElement('li');
     var rank = document.createElement('div'); rank.className = 'rank'; rank.textContent = '#' + place;
     var body = document.createElement('div'); body.className = 'deck-body';
-    var chips = document.createElement('div'); chips.className = 'chips';
+    var chips = document.createElement('div'); chips.className = 'icons';
     r.s.slice().sort(function (a, b) { return a - b; }).forEach(function (k) {
-      var s = document.createElement('span'); s.className = 'chip ' + CARDS[k].r; s.title = CARDS[k].e;
-      s.textContent = CARDS[k].n; var lv = document.createElement('i'); lv.textContent = 'Lv' + levels[k]; s.appendChild(lv);
+      var c = CARDS[k], s = document.createElement('span');
+      s.className = 'ico ' + c.r; s.title = c.n + ' Lv' + levels[k] + ' — ' + c.e;
+      s.innerHTML = (c.img ? '<img alt="">' : '') + '<b></b><em></em>';
+      if (c.img) s.querySelector('img').src = c.img;
+      s.querySelector('b').textContent = 'Lv' + levels[k];
+      s.querySelector('em').textContent = c.n;
       chips.appendChild(s);
     });
     body.appendChild(chips);
