@@ -106,6 +106,13 @@ button.mini:hover{color:var(--ink);border-color:var(--ink-faint)}
 .actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:17px;padding-top:15px;border-top:1px solid var(--line)}
 .actions .primary{color:var(--accent);border-color:color-mix(in srgb,var(--accent) 45%,var(--line))}
 
+.lvbar{display:flex;gap:3px;margin-top:6px}
+.lvbar button{flex:1;min-width:0;padding:2px 0;font:inherit;font-size:11.5px;cursor:pointer;border:1px solid var(--line);border-radius:5px;background:transparent;color:var(--ink-faint)}
+.lvbar button[aria-pressed="true"]{background:currentColor;border-color:currentColor}
+.lvbar button[aria-pressed="true"] span{color:var(--panel);font-weight:700}
+.card{cursor:default}
+.card .txt{flex:1}
+.chip i{font-style:normal;opacity:.75;margin-left:3px}
 /* ---- controls ---- */
 .controls{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end}
 .field{display:flex;flex-direction:column;gap:5px}
@@ -170,9 +177,9 @@ footer a{color:var(--ink-dim)}
   <div>
     <div class="eyebrow">Training Plan Optimizer</div>
     <h1>War for the Crown</h1>
-    <p>Choose the plan cards you own and uncover the strongest five-card decks available to you.</p>
+    <p>Set the level of each plan card you own and uncover the strongest five-card decks available to you.</p>
   </div>
-  <div class="hero-stat"><b>42,504</b><span>Decks analyzed</span></div>
+  <div class="hero-stat"><b>330M</b><span>Deck × level combos</span></div>
 </header>
 
 <div class="layout">
@@ -183,15 +190,15 @@ footer a{color:var(--ink-dim)}
       <p class="sub" id="ownedLine">None selected.</p>
       <div id="picker"></div>
       <div class="actions">
-        <button class="mini" id="selAll">Select all 24</button>
+        <button class="mini" id="selAll">All at Lv 6</button>
         <button class="mini" id="selNone">Clear</button>
         <button class="mini primary" id="copyLink">Copy shareable link</button>
       </div>
     </section>
 
     <section class="panel" id="upgradePanel" hidden>
-      <h2>Best card to chase next</h2>
-      <p class="sub">How much your best deck would improve if you unlocked one more card.</p>
+      <h2>Best card to level next</h2>
+      <p class="sub">How much your best deck would improve with one more level on a single card (or unlocking it at Lv 1).</p>
       <div class="upgrades" id="upgrades"></div>
     </section>
   </div>
@@ -205,7 +212,14 @@ footer a{color:var(--ink-dim)}
           <div class="seg" id="topN">
             <button data-v="5">Top 5</button>
             <button data-v="10">Top 10</button>
-            <button data-v="15">Top 15</button>
+            <button data-v="20">Top 20</button>
+          </div>
+        </div>
+        <div class="field">
+          <label>Rank by</label>
+          <div class="seg" id="rankBy">
+            <button data-v="avg">Average</button>
+            <button data-v="max">Top power</button>
           </div>
         </div>
       </div>
@@ -219,239 +233,8 @@ footer a{color:var(--ink-dim)}
 <footer id="footer"></footer>
 </div>
 
-<script src="data.js?v=04527c279f"></script>
-<script>
-(function(){
-  var D = window.WOTC;
-  if(!D){ document.getElementById('results').innerHTML =
-    '<li class="empty">data.js failed to load — run <code>python3 build_web_data.py</code>.</li>'; return; }
-
-  var CARDS = D.cards, N = CARDS.length;
-  var TIERS = ['Gold','Purple','Blue'];
-  var nf = new Intl.NumberFormat('en-US');
-
-  var owned = 0;          // bitmask of cards the player has
-  var topN = 10;
-
-  /* ---------- restore selection: URL hash wins, then localStorage ---------- */
-  function readInitial(){
-    var h = location.hash.replace(/^#/,'');
-    if(/^[0-9a-z]+$/.test(h)){
-      var v = parseInt(h,36);
-      if(!isNaN(v) && v >= 0 && v < (1<<N)) return v;
-    }
-    try{
-      var s = localStorage.getItem('wotc.owned');
-      if(s !== null){ var m = parseInt(s,10); if(!isNaN(m)) return m; }
-    }catch(e){}
-    return 0;          // first visit: nothing ticked, so the page asks before it answers
-  }
-
-  function persist(){
-    try{ localStorage.setItem('wotc.owned', String(owned)); }catch(e){}
-    history.replaceState(null,'', owned ? '#'+owned.toString(36) : location.pathname);
-  }
-
-  /* ---------- picker ---------- */
-  var picker = document.getElementById('picker');
-  var buttons = [];
-  TIERS.forEach(function(tier){
-    var idxs = [];
-    for(var i=0;i<N;i++) if(CARDS[i].r === tier) idxs.push(i);
-
-    var sec = document.createElement('div'); sec.className = 'tier';
-    var head = document.createElement('div'); head.className = 'tier-head';
-    head.innerHTML = '<span class="tier-name '+tier+'">'+tier+'</span>';
-    var all = document.createElement('button');
-    all.className = 'mini'; all.textContent = 'All '+tier.toLowerCase();
-    all.onclick = function(){
-      var mask = 0; idxs.forEach(function(i){ mask |= 1<<i; });
-      owned = (owned & mask) === mask ? (owned & ~mask) : (owned | mask);
-      render();
-    };
-    head.appendChild(all); sec.appendChild(head);
-
-    var grid = document.createElement('div'); grid.className = 'grid';
-    idxs.forEach(function(i){
-      var c = CARDS[i];
-      var b = document.createElement('button');
-      b.className = 'card ' + tier;
-      b.type = 'button';
-      b.title = c.e;
-      b.innerHTML = '<span class="tick"></span>' +
-                    (c.img ? '<img alt="" src="' + c.img + '">' : '') +
-                    '<span class="txt"><span class="nm"></span>' +
-                    '<span class="st">' + c.s + ' STR / ' + c.t + ' TECH</span></span>';
-      b.querySelector('.nm').textContent = c.n;
-      b.onclick = function(){ owned ^= (1<<i); render(); };
-      grid.appendChild(b);
-      buttons[i] = b;
-    });
-    sec.appendChild(grid);
-    picker.appendChild(sec);
-  });
-
-  /* ---------- segmented controls ---------- */
-  function seg(id, initial, cb){
-    var el = document.getElementById(id);
-    el.addEventListener('click', function(ev){
-      var b = ev.target.closest('button'); if(!b) return;
-      cb(b.dataset.v); render();
-    });
-    return function(cur){
-      [].forEach.call(el.children, function(b){
-        b.setAttribute('aria-pressed', String(b.dataset.v === String(cur)));
-      });
-    };
-  }
-  var paintTopN = seg('topN','10', function(v){ topN = +v; });
-
-  document.getElementById('selAll').onclick  = function(){ owned = (1<<N)-1; render(); };
-  document.getElementById('selNone').onclick = function(){ owned = 0; render(); };
-  document.getElementById('copyLink').onclick = function(){
-    var btn = this, url = location.href;
-    var done = function(){ btn.textContent = 'Copied'; setTimeout(function(){ btn.textContent='Copy shareable link'; },1400); };
-    if(navigator.clipboard) navigator.clipboard.writeText(url).then(done, done); else done();
-  };
-
-  /* ---------- search ---------- */
-  // Decks are pre-sorted by average power -- the only ranking on offer, since a
-  // deck's max is a lucky roll rather than something a player can aim at -- so
-  // the scan can stop as soon as it has enough hits.
-  function search(ownedMask, want){
-    var mask = D.mask, out = [];
-    for(var i=0;i<mask.length && out.length<want;i++)
-      if((mask[i] & ~ownedMask) === 0) out.push(i);
-    return out;
-  }
-
-  function countBuildable(ownedMask){
-    var mask = D.mask, n = 0;
-    for(var i=0;i<mask.length;i++) if((mask[i] & ~ownedMask) === 0) n++;
-    return n;
-  }
-
-  function bestScore(ownedMask){
-    var mask = D.mask;
-    for(var i=0;i<mask.length;i++) if((mask[i] & ~ownedMask) === 0) return D.score[i];
-    return 0;
-  }
-
-  function popcount(x){ var n=0; while(x){ x &= x-1; n++; } return n; }
-
-  /* ---------- render ---------- */
-  function deckRow(i, place){
-    var li = document.createElement('li');
-
-    var rank = document.createElement('div');
-    rank.className = 'rank'; rank.textContent = '#' + place;
-
-    var body = document.createElement('div'); body.className = 'deck-body';
-    var chips = document.createElement('div'); chips.className = 'chips';
-    var m = D.mask[i];
-    for(var k=0;k<N;k++) if(m & (1<<k)){
-      var s = document.createElement('span');
-      s.className = 'chip ' + CARDS[k].r;
-      s.textContent = CARDS[k].n;
-      s.title = CARDS[k].e;
-      chips.appendChild(s);
-    }
-    body.appendChild(chips);
-
-    var meta = document.createElement('div'); meta.className = 'meta';
-    var bits = [];
-    bits.push('range ' + nf.format(D.lo[i]) + '&ndash;' + nf.format(D.hi[i]));
-    bits.push('overall #' + nf.format(i + 1));
-    meta.innerHTML = bits.join(' &middot; ');
-    body.appendChild(meta);
-
-    var score = document.createElement('div'); score.className = 'score';
-    score.innerHTML = '<b>' + nf.format(D.score[i]) + '</b><span>avg power</span>';
-
-    li.appendChild(rank); li.appendChild(body); li.appendChild(score);
-    return li;
-  }
-
-  function renderUpgrades(){
-    var panel = document.getElementById('upgradePanel');
-    var box = document.getElementById('upgrades');
-    var have = popcount(owned);
-    if(have < 5 || have === N){ panel.hidden = true; return; }
-
-    var base = bestScore(owned), rows = [];
-    for(var i=0;i<N;i++){
-      if(owned & (1<<i)) continue;
-      var s = bestScore(owned | (1<<i));
-      if(s > base) rows.push({i:i, gain:s - base, to:s});
-    }
-    if(!rows.length){ panel.hidden = true; return; }
-    rows.sort(function(a,b){ return b.gain - a.gain; });
-
-    box.innerHTML = '';
-    rows.slice(0,3).forEach(function(r){
-      var d = document.createElement('div'); d.className = 'upg';
-      var c = CARDS[r.i];
-      d.innerHTML = '<span class="chip ' + c.r + '"></span>' +
-                    '<span style="color:var(--ink-faint)">best deck &rarr; ' + nf.format(r.to) + '</span>' +
-                    '<span class="delta">+' + nf.format(Math.round(r.gain)) + '</span>';
-      d.querySelector('.chip').textContent = c.n;
-      d.querySelector('.chip').title = c.e;
-      box.appendChild(d);
-    });
-    panel.hidden = false;
-  }
-
-  function render(){
-    persist();
-    for(var i=0;i<N;i++) buttons[i].setAttribute('aria-pressed', String(!!(owned & (1<<i))));
-    paintTopN(topN);
-
-    var have = popcount(owned);
-    document.getElementById('ownedLine').textContent =
-      have === 0 ? 'Nothing selected yet — tick the cards you own.' :
-      have + ' of ' + N + ' cards selected.';
-
-    var list = document.getElementById('results');
-    var count = document.getElementById('count');
-    list.innerHTML = '';
-
-    if(have < 5){
-      count.textContent = '';
-      var li = document.createElement('li'); li.className = 'empty';
-      li.textContent = 'Pick at least 5 cards to see deck suggestions.';
-      list.appendChild(li);
-      document.getElementById('upgradePanel').hidden = true;
-      return;
-    }
-
-    var buildable = countBuildable(owned);
-    count.innerHTML = '<b>' + nf.format(buildable) + '</b> buildable deck' +
-      (buildable === 1 ? '' : 's') + ' out of ' + nf.format(D.nDecks) + '.';
-
-    search(owned, topN).forEach(function(idx, k){
-      list.appendChild(deckRow(idx, k + 1));
-    });
-    renderUpgrades();
-  }
-
-  var a = D.accuracy;
-  document.getElementById('footer').innerHTML =
-    'Power = total Strength &times; total Technique after every plan effect resolves. ' +
-    'Card order is randomised every session, so decks are ranked by <b>average power</b> &mdash; the ' +
-    'same average the game shows on its own training screen, so you can check any deck here against ' +
-    'your own. The range beside each deck is the full spread the game can display; the high end is a ' +
-    'lucky roll, not something you can aim at, which is why nothing is ranked by it.<br>' +
-    'Numbers are computed with the game’s own Training Plan logic, extracted from the client ' +
-    '(' + nf.format(D.nDecks) + ' decks)' +
-    (a ? '. On all ' + a.n + ' decks measured in-game it reproduces the displayed min, max and ' +
-         'average exactly.' : '.') +
-    ' For decks with Airdrop or Destiny the exact number shifts a little with how you order the ' +
-    'five slots; the figure shown is the average over all orderings.';
-
-  owned = readInitial();
-  render();
-})();
-</script>
+<script src="data.js?v=54c3f9bc1e"></script>
+<script src="app.js?v=d551768d88"></script>
 
 <!-- Traffic counts. No cookies, no identifiers, no consent banner. count.js reports
      location.pathname + location.search only, so the card selection this page keeps
