@@ -141,6 +141,29 @@ var SCAN = (function () {
     }
     return +s;
   }
+  function digitScore(g, d) {
+    var best = 0;
+    (DIGITS[d] || []).forEach(function (t) { var e = 0; for (var k = 0; k < 160; k++) if (t[k] === g[k]) e++; if (e > best) best = e; });
+    return best / 160;
+  }
+  function numberScore(gs, n) {            // how well glyphs gs spell the number n
+    var s = String(n); if (gs.length !== s.length) return 0;
+    var t = 0; for (var i = 0; i < s.length; i++) t += digitScore(gs[i], s[i]);
+    return t / s.length;
+  }
+  // The card is known, so only its 6 (STR, TECH) pairs are possible: pick the
+  // level whose digits fit the tile best (tolerates other screen scales).
+  function levelFromTile(im, g, x, y) {
+    var tab = STATS[g]; if (!tab) return null;
+    var a = statBox(x, y, 0), b = statBox(x, y, 1);
+    var gs = glyphs(im, a[0], a[1], a[2], a[3]), gt = glyphs(im, b[0], b[1], b[2], b[3]);
+    if (!gs.length || !gt.length) return null;
+    var sc = Object.keys(tab).map(function (k) {
+      var st = k.split(','); return [(numberScore(gs, +st[0]) + numberScore(gt, +st[1])) / 2, tab[k]];
+    }).sort(function (p, q) { return q[0] - p[0]; });
+    if (sc[0][0] < 0.75 || (sc[1] && sc[0][0] - sc[1][0] < 0.02)) return null;
+    return sc[0][1];
+  }
   function statBox(x, y, which) { var cx = which === 0 ? x - 38 : x + 50; return [cx - 24, y - 75, cx + 24, y - 35]; }
 
   function starDesc(im, x, y) {
@@ -168,8 +191,7 @@ var SCAN = (function () {
             if (x + 80 > im.w || y + 100 > im.h) return;
             var id = identify(im, x + 4, y + 10);
             if (id.s < ICON_MIN) return;
-            var st = readNumber(im, statBox(x, y, 0)), te = readNumber(im, statBox(x, y, 1));
-            var lv = STATS[id.g] && st !== null && te !== null ? (STATS[id.g][st + ',' + te] || null) : null;
+            var lv = levelFromTile(im, id.g, x, y);
             tiles.push({ img: ii, g: id.g, s: id.s, x: x, y: y, lv: lv, star: starDesc(im, x, y), bar: ci === 1 });
           });
         });
@@ -195,6 +217,7 @@ var SCAN = (function () {
     });
     return { found: found, tiles: kept.length };
   }
-  return { init: init, read: read, W: W, _identify: identify, _prepare: prepare, _rows: rows };
+  return { init: init, read: read, W: W, _identify: identify, _prepare: prepare, _rows: rows,
+           _readNumber: readNumber, _levelFromTile: levelFromTile, _statBox: statBox, _glyphs: glyphs };
 })();
 if (typeof module !== 'undefined') module.exports = SCAN;
