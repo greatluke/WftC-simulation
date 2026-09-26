@@ -178,6 +178,50 @@
     if (navigator.clipboard) navigator.clipboard.writeText(location.href).then(done, done); else done();
   };
 
+  /* ---------- import from screenshots ---------- */
+  // Everything runs in this page: the images never leave the device.
+  if (window.SCAN && D.scan) {
+    SCAN.init(D.scan, CARDS);
+    var fileIn = document.getElementById('shotFile'), note = document.getElementById('importNote');
+    document.getElementById('importShot').onclick = function () { fileIn.click(); };
+    fileIn.onchange = function () {
+      var files = [].slice.call(fileIn.files); fileIn.value = '';
+      if (!files.length) return;
+      note.hidden = false; note.textContent = 'Reading ' + files.length + ' screenshot' + (files.length > 1 ? 's' : '') + '…';
+      Promise.all(files.map(function (f) {
+        return new Promise(function (res, rej) {
+          var img = new Image(); img.onload = function () { res(img); }; img.onerror = rej;
+          img.src = URL.createObjectURL(f);
+        });
+      })).then(function (imgs) {
+        setTimeout(function () {                     // let the note paint first
+          var data = imgs.map(function (img) {
+            var h = Math.round(img.naturalHeight * SCAN.W / img.naturalWidth);
+            var c = document.createElement('canvas'); c.width = SCAN.W; c.height = h;
+            var ctx = c.getContext('2d'); ctx.drawImage(img, 0, 0, SCAN.W, h);
+            URL.revokeObjectURL(img.src);
+            return { w: SCAN.W, h: h, px: ctx.getImageData(0, 0, SCAN.W, h).data };
+          });
+          var r = SCAN.read(data), byG = {}, got = [], unsure = [];
+          CARDS.forEach(function (c, i) { byG[c.g] = i; });
+          if (document.getElementById('shotAll').checked && Object.keys(r.found).length)
+            levels = levels.map(function () { return 0; });
+          Object.keys(r.found).forEach(function (g) {
+            var i = byG[g], lv = r.found[g];
+            if (i === undefined) return;
+            if (lv) { levels[i] = lv; got.push(CARDS[i].n + ' Lv' + lv); }
+            else { levels[i] = levels[i] || 1; unsure.push(CARDS[i].n); }
+          });
+          note.textContent = got.length || unsure.length
+            ? 'Read ' + (got.length + unsure.length) + ' plan' + (got.length + unsure.length === 1 ? '' : 's') + ': ' + got.join(', ') +
+              (unsure.length ? '. Level not readable — please set: ' + unsure.join(', ') : '') + '. Check the levels below.'
+            : 'No plans recognised. Use screenshots of the Training Plan screen (All Plans list), full width, portrait.';
+          render();
+        }, 30);
+      }).catch(function () { note.textContent = 'Could not open that image.'; });
+    };
+  } else document.querySelector('.import').hidden = true;
+
   /* ---------- render ---------- */
   function deckRow(r, place) {
     var li = document.createElement('li');

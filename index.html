@@ -76,14 +76,10 @@ header a{color:var(--accent)}
 .card:hover{border-color:var(--ink-faint);transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,.18)}
 .card:focus-visible,button:focus-visible{outline:2px solid var(--accent-2);outline-offset:2px}
 .card img{
-  width:54px;height:54px;flex:0 0 auto;border-radius:10px;display:block;object-fit:cover;
-  border:1px solid rgba(255,255,255,.14);background:#2a2c38;
-  box-shadow:0 5px 13px rgba(0,0,0,.32),inset 0 0 0 1px rgba(255,255,255,.06);
+  width:50px;height:59px;flex:0 0 auto;border-radius:4px;display:block;object-fit:contain;
+  border:0;background:transparent;
+  filter:drop-shadow(0 4px 8px rgba(0,0,0,.35));
 }
-.card.Gold img{border-color:rgba(224,172,74,.42)}
-.card.Purple img{border-color:rgba(177,131,232,.42)}
-.card.Blue img{border-color:rgba(95,168,232,.42)}
-.card[aria-pressed="true"] img{box-shadow:0 7px 17px rgba(0,0,0,.38),0 0 0 1px currentColor}
 .card .txt{min-width:0}
 .card .nm{display:block;font-weight:600;font-size:13.5px;padding-right:16px}
 .card .st{display:block;font-size:11.5px;color:var(--ink-faint);font-variant-numeric:tabular-nums;margin-top:1px}
@@ -115,12 +111,15 @@ button.mini:hover{color:var(--ink);border-color:var(--ink-faint)}
 .chip i{font-style:normal;opacity:.75;margin-left:3px}
 .icons{display:flex;gap:6px;flex-wrap:wrap;padding:2px 0 4px}
 .ico{position:relative;display:flex;flex-direction:column;align-items:center;width:58px}
-.ico img{width:52px;height:52px;border-radius:9px;object-fit:cover;display:block;border:1.5px solid var(--line);background:#2a2c38}
-.ico.Gold img{border-color:var(--gold)} .ico.Purple img{border-color:var(--purple)} .ico.Blue img{border-color:var(--blue)}
+.ico img{width:52px;height:61px;object-fit:contain;display:block;filter:drop-shadow(0 3px 6px rgba(0,0,0,.35))}
 .ico b{position:absolute;top:-5px;left:50%;transform:translateX(-50%);font-size:10.5px;line-height:1;padding:2px 5px;border-radius:999px;color:#fff;background:#222a;border:1px solid currentColor;white-space:nowrap;font-variant-numeric:tabular-nums}
 .ico.Gold b{background:var(--gold-bg);color:var(--gold)} .ico.Purple b{background:var(--purple-bg);color:var(--purple)} .ico.Blue b{background:var(--blue-bg);color:var(--blue)}
 .ico em{font-style:normal;font-size:10px;color:var(--ink-faint);margin-top:2px;max-width:58px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-@media(max-width:560px){.ico{width:48px}.ico img{width:44px;height:44px}}
+@media(max-width:560px){.ico{width:48px}.ico img{width:44px;height:52px}}
+.import{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;margin:0 0 16px;padding:10px 12px;border:1px dashed var(--line);border-radius:10px}
+.import[hidden]{display:none}
+.import .sub{margin:0;display:flex;gap:6px;align-items:center}
+.import #importNote{flex-basis:100%;color:var(--ink-dim)}
 /* ---- controls ---- */
 .controls{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end}
 .field{display:flex;flex-direction:column;gap:5px}
@@ -169,7 +168,7 @@ footer{margin-top:34px;color:var(--ink-faint);font-size:12.5px;line-height:1.7}
 footer a{color:var(--ink-dim)}
 @media(max-width:560px){
   .wrap{padding:22px 14px 48px}.panel{padding:16px}.grid{grid-template-columns:1fr 1fr;gap:7px}
-  .card{min-height:64px;padding:7px;gap:8px}.card img{width:46px;height:46px;border-radius:8px}.card .nm{font-size:12.5px}.card .st{font-size:10.5px}
+  .card{min-height:64px;padding:7px;gap:8px}.card img{width:42px;height:50px}.card .nm{font-size:12.5px}.card .st{font-size:10.5px}
   ol.decks li{grid-template-columns:25px minmax(0,1fr);gap:8px}.score{grid-column:2;text-align:left;display:flex;align-items:baseline;gap:7px}.score b{font-size:17px}
 }
 @media(prefers-reduced-motion:reduce){.card,ol.decks li{transition:none}.card:hover{transform:none}}
@@ -196,6 +195,12 @@ footer a{color:var(--ink-dim)}
     <section class="panel">
       <h2>Your cards</h2>
       <p class="sub" id="ownedLine">None selected.</p>
+      <div class="import">
+        <button class="mini primary" id="importShot">Import from screenshots</button>
+        <input type="file" id="shotFile" accept="image/*" multiple hidden>
+        <label class="sub"><input type="checkbox" id="shotAll" checked> Screenshots show all my plans (cards not found = not owned)</label>
+        <p class="sub" id="importNote" hidden></p>
+      </div>
       <div id="picker"></div>
       <div class="actions">
         <button class="mini" id="selAll">All at Lv 6</button>
@@ -241,8 +246,9 @@ footer a{color:var(--ink-dim)}
 <footer id="footer"></footer>
 </div>
 
-<script src="data.js?v=54c3f9bc1e"></script>
-<script src="app.js?v=a9f678dbf5"></script>
+<script src="data.js?v=1b551c93c4"></script>
+<script src="scan.js?v=15bf158384"></script>
+<script src="app.js?v=437ba1c383"></script>
 
 <!-- Traffic counts. No cookies, no identifiers, no consent banner. count.js reports
      location.pathname + location.search only, so the card selection this page keeps
